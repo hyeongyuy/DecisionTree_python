@@ -7,7 +7,7 @@ import pandas as pd
 import os
 from sklearn.model_selection import train_test_split
 
-workingdir = r'C:\Users\yhg94\Desktop\iterpret_tree\user_tree'
+workingdir = r'working'
 os.chdir(os.path.join(workingdir, 'modules' ))
 from usertree import userTree as utr
 import utils
