@@ -1,7 +1,7 @@
 # DecisionTree_python
 A decision tree classifier implemented in python.
 
-This classifier is based on the CART algorithm, which is a binary tree.
+This code is based on the CART algorithm, which is a binary tree.
 You can use gini-index, entropy, and tsallis entropy as a splitting criterion.
 
 reference : 
