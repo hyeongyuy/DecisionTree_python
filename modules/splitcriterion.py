@@ -101,22 +101,9 @@ class splitCrit(object):
 
 class baselineSplitCrit(splitCrit):
     """
-    If you want to define a new splitting criterion, \
-    you can override this class.
-    
-    Also, you can define a new class.
-    If you define a new class, you need to modify the following section in usertree.py file.
-        (line30~31)
-        > # call instance
-        > self.crt = sc.baselineSplitCrit (self.MIN_SAMPLES, params)
-    
-    Below is an example of adding tsallis entropy to the CART classifier algorithm.
     reference : 
         Wang, Yisen, and Shu-Tao Xia. "Unifying attribute splitting criteria of decision trees by Tsallis entropy." 
         2017 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP). IEEE, 2017.
-    tsallis entropy requires the following additional hyper prameter.(q)    
-
-    
     If you want to use only gini and entropy, \
     activate the [Default] code below and deactivate [Add tsallis entropy] code.
     """
