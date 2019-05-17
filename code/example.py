@@ -6,9 +6,10 @@ import numpy as np
 import pandas as pd
 import os
 from sklearn.model_selection import train_test_split
-
-workingdir = r'C:\Users\yhg94\Desktop\iterpret_tree\user_tree'
+import sys
+workingdir = r'working'
 os.chdir(os.path.join(workingdir, 'modules' ))
+#sys.path.extend([os.path.abspath(".")])
 from usertree import userTree as utr
 import utils
 
@@ -148,6 +149,9 @@ entropy_tree_graph = graphviz.Source(node + edge+'\n}')
 #gini
 node, edge = gini_tree_ins.graph.tree_to_graph(gini_tree2.graph_tree)
 gini_tree_graph = graphviz.Source(node + edge+'\n}')
+#save graph
+entropy_tree_graph.render('{}/entropy_tree'.format(graph_dir))
+gini_tree_graph.render('{}/gini_tree'.format(graph_dir))
 
 """
 ########################################################################
