@@ -7,7 +7,7 @@ import pandas as pd
 import os
 from sklearn.model_selection import train_test_split
 
-workingdir = r'working'
+workingdir = r'C:\Users\yhg94\Desktop\iterpret_tree\user_tree'
 os.chdir(os.path.join(workingdir, 'modules' ))
 from usertree import userTree as utr
 import utils
@@ -75,15 +75,18 @@ Check performance
 entropy_tree_perform  = \
         utils.perform_check(test['target'],\
         entropy_tree_pred, entropy_tree_pred_prob, \
-        entropy_tree_ins.NUM_CLASSES, entropy_tree_ins.CLASS_DICT_, average='micro')
+        entropy_tree_ins.NUM_CLASSES, \
+        entropy_tree_ins.CLASS_DICT_, average='micro')
 gini_tree_perform  = \
         utils.perform_check(test['target'],\
         gini_tree_pred, gini_tree_pred_prob, \
         gini_tree_ins.NUM_CLASSES, gini_tree_ins.CLASS_DICT_, average='micro')
 
 perform_base_str = '{} : ACCURACY :{}, RECALL :{}, PRECISION : {}, F1 : {}, AUC : {}'
-print(perform_base_str .format('entropy\t', *np.round(np.array(entropy_tree_perform), 3)))
-print(perform_base_str .format('gini\t', *np.round(np.array(gini_tree_perform), 3)))
+print(perform_base_str .format('entropy\n  ', \
+                               *np.round(np.array(entropy_tree_perform), 3)))
+print(perform_base_str .format('gini\n  ', \
+                               *np.round(np.array(gini_tree_perform), 3)))
 
 
 """
@@ -92,6 +95,8 @@ save & Load models
 """
 #save
 sava_models_dir = 'models'
+if not os.path.exists(sava_models_dir):
+    os.makedirs(sava_models_dir)
 model_dict ={}
 model_dict['entropy'] = entropy_tree_ins
 model_dict['gini'] = gini_tree_ins
@@ -101,32 +106,35 @@ utils.save_obj(model_dict, os.path.join(sava_models_dir , 'user_tree'))
 #load
 model_dict = utils.load_obj(os.path.join(sava_models_dir , 'user_tree'))
 model_dict.keys()
-entropy_model_ins2 = model_dict['entropy']
-gini_model_ins2 = model_dict['gini']
+entropy_tree2 = model_dict['entropy']
+gini_tree2 = model_dict['gini']
 
 ## check loaded model
 #entropy
 entropy_tree_pred2, entropy_tree_pred_prob2 = \
-    entropy_model_ins2.predict(test, entropy_tree)
+    entropy_tree2.predict(test, entropy_tree)
 #gini
 gini_tree_pred2, gini_tree_pred_prob2 = \
-    gini_model_ins2.predict(test, gini_tree)
+    gini_tree2.predict(test, gini_tree)
 
 #performance check
 entropy_tree_perform2  = \
         utils.perform_check(test['target'],\
         entropy_tree_pred2, entropy_tree_pred_prob2, \
-        entropy_model_ins2.NUM_CLASSES, entropy_model_ins2.CLASS_DICT_, average='micro')
+        entropy_tree2.NUM_CLASSES, entropy_tree2.CLASS_DICT_, average='micro')
 gini_tree_perform2  = \
         utils.perform_check(test['target'],\
         gini_tree_pred2, gini_tree_pred_prob2, \
-        gini_model_ins2.NUM_CLASSES, gini_model_ins2.CLASS_DICT_, average='micro')
+        gini_tree2.NUM_CLASSES, gini_tree2.CLASS_DICT_, average='micro')
 
-print(perform_base_str .format('entropy(saved model)\n\t', *np.round(np.array(entropy_tree_perform), 3)))
-print(perform_base_str .format('entropy(loaded model)\n\t', *np.round(np.array(entropy_tree_perform2), 3)))
-print(perform_base_str .format('gini(saved model)\n\t', *np.round(np.array(gini_tree_perform), 3)))
-print(perform_base_str .format('gini(loaded model)\n\t', *np.round(np.array(gini_tree_perform2), 3)))
-
+print(perform_base_str .format('entropy(saved model)\n  ', \
+                               *np.round(np.array(entropy_tree_perform), 3)))
+print(perform_base_str .format('entropy(loaded model)\n  ', \
+                               *np.round(np.array(entropy_tree_perform2), 3)))
+print(perform_base_str .format('gini(saved model)\n  ', \
+                               *np.round(np.array(gini_tree_perform), 3)))
+print(perform_base_str .format('gini(loaded model)\n  ', \
+                               *np.round(np.array(gini_tree_perform2), 3)))
 
 """
 ########################################################################
@@ -135,27 +143,80 @@ Visualization
 import graphviz
 graph_dir = 'graph'
 #entropy
-node, edge = entropy_tree_ins.graph.tree_to_graph(entropy_model_ins2.graph_tree)
+node, edge = entropy_tree_ins.graph.tree_to_graph(entropy_tree2.graph_tree)
 entropy_tree_graph = graphviz.Source(node + edge+'\n}')
 #gini
-node, edge = gini_tree_ins.graph.tree_to_graph(gini_model_ins2.graph_tree)
+node, edge = gini_tree_ins.graph.tree_to_graph(gini_tree2.graph_tree)
 gini_tree_graph = graphviz.Source(node + edge+'\n}')
 
 """
 ########################################################################
 Define a new splitting criterion
 """
+#GainRatio(entropy)
+entropy_GR_tree_ins = utr(n_samples, MAX_DEPTH, params = ['entropy_GR'])
+entropy_GR_tree, entropy_GR_graph_tree = \
+    entropy_GR_tree_ins.fit(train, target_attribute_name = "target")
 #tsallis entropy
-tsallis_model_ins = utr(n_samples, MAX_DEPTH, params = ['tsallis', 2])
+tsallis_tree_ins = utr(n_samples, MAX_DEPTH, params = ['tsallis', 2])
 tsallis_tree, tsallis_graph_tree = \
-    tsallis_model_ins.fit(train, target_attribute_name = "target")
+    tsallis_tree_ins.fit(train, target_attribute_name = "target")
+#Gainratio(tsallis)
+tsallis_GR_tree_ins = utr(n_samples, MAX_DEPTH, params = ['tsallis_GR', 2])
+tsallis_GR_tree, tsallis_GR_graph_tree = \
+    tsallis_GR_tree_ins.fit(train, target_attribute_name = "target")
+    
 # predict
+entropy_GR_tree_pred, entropy_GR_tree_pred_prob = \
+    tsallis_GR_tree_ins.predict(test, entropy_GR_tree)
 tsallis_tree_pred, tsallis_tree_pred_prob = \
-    tsallis_model_ins.predict(test, tsallis_tree)
+    entropy_GR_tree_ins.predict(test, tsallis_tree)
+tsallis_GR_tree_pred, tsallis_GR_tree_pred_prob = \
+    tsallis_tree_ins.predict(test, tsallis_GR_tree)
 
 ## performance check
+entropy_GR_tree_perform  = \
+        utils.perform_check(test['target'],\
+        entropy_GR_tree_pred, entropy_GR_tree_pred_prob, \
+        entropy_GR_tree_ins.NUM_CLASSES, entropy_GR_tree_ins.CLASS_DICT_, average='micro')
+        
 tsallis_tree_perform  = \
         utils.perform_check(test['target'],\
         tsallis_tree_pred, tsallis_tree_pred_prob, \
-        tsallis_model_ins.NUM_CLASSES, tsallis_model_ins.CLASS_DICT_, average='micro')
-print(perform_base_str .format('tsallis\n\t', *np.round(np.array(tsallis_tree_perform), 3)))
+        tsallis_tree_ins.NUM_CLASSES, tsallis_tree_ins.CLASS_DICT_, average='micro')
+tsallis_GR_tree_perform  = \
+        utils.perform_check(test['target'],\
+        tsallis_GR_tree_pred, tsallis_GR_tree_pred_prob, \
+        tsallis_GR_tree_ins.NUM_CLASSES, tsallis_GR_tree_ins.CLASS_DICT_, average='micro')
+print(perform_base_str .format('entropy GainRatio\n  ', \
+                               *np.round(np.array(entropy_GR_tree_perform), 3)))        
+print(perform_base_str .format('tsallis\n  ', \
+                               *np.round(np.array(tsallis_tree_perform), 3)))
+print(perform_base_str .format('tsallis GainRatio\n  ', \
+                               *np.round(np.array(tsallis_GR_tree_perform), 3)))
+
+
+"""
+#######################################################################
+get leaves information
+"""
+#Information about all leaves
+train_node_info = utils.get_usrt_info(train, tsallis_tree_ins, tsallis_tree, -1)
+test_node_info = utils.get_usrt_info(test, tsallis_tree_ins, tsallis_tree, -1)
+train_node_info
+
+#Information about leaves below depth
+depth = 3
+train_CART_tsallis_sample_ratio, \
+train_CART_tsallis_max_prob, \
+CART_tsallis_N_rule \
+    = utils.get_usrt_info(train, tsallis_tree_ins, tsallis_tree, depth )
+test_CART_tsallis_sample_ratio, \
+test_CART_tsallis_max_prob, _ \
+    =utils.get_usrt_info(test, tsallis_tree_ins, tsallis_tree, depth)
+base_str = '{}, sample_ratio : {}, max_probability : {}'
+print('depth = ~{}'.format(depth))
+print(base_str.format('train', \
+          train_CART_tsallis_sample_ratio, train_CART_tsallis_max_prob))
+print(base_str.format('test', \
+          test_CART_tsallis_sample_ratio, test_CART_tsallis_max_prob))

@@ -16,6 +16,8 @@ import splitcriterion as sc
 
 class userTree(object):
     def __init__(self, min_samples, max_depth, params, simplify = True):
+        ### parameters
+
         #terminate criteria
         self.MIN_SAMPLES = min_samples
         self.MAX_DEPTH = max_depth
@@ -28,7 +30,7 @@ class userTree(object):
         
         self.graph = vg.visGraph()
 
-    # 한 노드에서 분기 된 노드의 class가 같은 경우 하나의 노드로 통합함
+    # 한 노드에서 분기 된 leaf node의 class가 같은 경우 하나의 노드로 통합함
     def recur_simplify(self, tree_org, graph_tree_org):
         bf_rule_list = ut.get_leaf_rule(tree_org, [], [], leaf_info=False)
         tree_rule = ut.get_leaf_rule(tree_org, [], [], leaf_info=True)
@@ -41,6 +43,7 @@ class userTree(object):
             graph_rule = graph_rule[:-1] + [graph_rule [-1].replace('!=', '==').replace('<', '>=')] + [str(cond_rule[-1][0])]
             all_graph_tree_rules.append(tuple(graph_rule))
         
+        #leaf 노드 부모노드까지의 rule과 예측값이 중복되는 모든 rule들
         dup_rule = [r for r,c in Counter(all_rules).items() if c >=2]
         dup_graph_rule = [r for r,c in Counter(all_graph_tree_rules).items() if c >=2]
 
@@ -51,10 +54,11 @@ class userTree(object):
             sub_dict = reduce(dict.get, tuple(new_parent_rule), tree_org)
             
             if isinstance(sub_dict, dict):
+                #부모노드까지의 rule과 예측값이 동일한 rule들의 sub set concat
                 concat_child_df = pd.concat([i[1] for i in sub_dict.values()])
                 cnt_list = ut.count_class(concat_child_df.values, self.NUM_CLASSES)
 
-                if len(new_parent_rule) ==0:
+                if len(new_parent_rule) ==0: #상위노드가 없을 경우 SIMPLIFY 할 수 없음
                     tree_org = {'Root_node' : [np.argmax(cnt_list), concat_child_df]}
                     leaf_print= {'Root_node' : self.graph.node_info(cnt_list, self.N_DATA, root=True)}
                     return tree_org, leaf_print
@@ -77,7 +81,8 @@ class userTree(object):
     #############################################################################################
     def growing_tree(self, data, target_attribute_name, depth = 1):
         target_values = data[target_attribute_name]
-
+        ####################
+        #해당 노드에 들어 있는 모든 class 값이 동일할 경우 그 값을 반환
         cnt_list = ut.count_class(target_values.values, self.NUM_CLASSES)
         leaf_node_class = [np.argmax(cnt_list), target_values]
 
@@ -98,6 +103,7 @@ class userTree(object):
                 else:
                     return leaf_node_class, self.graph.node_info(cnt_list, self.N_DATA, root=False)
             
+            #split(수치 : 범위, 카테고리 : 값)
             condition = ['<', '>='] if slt_dtype =='n' else ['!=', '==']
 
             left_subtree, graph_left_subtree = self.growing_tree(left_sub_data, \

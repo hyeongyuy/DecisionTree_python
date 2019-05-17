@@ -15,6 +15,8 @@ import pickle
 import pandas as pd
 from collections import Counter
 
+
+
 def count_class(class_idx_att, n_class):
     return [sum(class_idx_att == i) for i in range(n_class)]
 
@@ -29,7 +31,6 @@ def setInDict(dataDict, mapList, value):
     getFromDict(temp_dict, mapList[:-1])[mapList[-1]] = value
     return temp_dict
 
-
 #model read & write
 def save_obj(obj, name):
     with open(name + '.pkl', 'wb') as f:
@@ -38,7 +39,6 @@ def save_obj(obj, name):
 def load_obj(name):
     with open( name + '.pkl', 'rb') as f:
         return pickle.load(f)
-
 
 def get_leaf_rule(tree_dict, rule_list, rule, leaf_info):
     tree = copy.deepcopy(tree_dict)
@@ -142,14 +142,13 @@ def get_usrt_info(df, tree_ins, tree_model, cut_depth, target_att= 'target'):
             sidx = recur_split(df, s_rule)
             node_df = df.loc[sidx,:]
             depth = len(s_rule)
-            try:
+            if len(node_df) != 0:
+                #If there is no value that satisfies this rule, it is ignored.
                 simple_max_prob = max(Counter(node_df[target_att]).values())/len(node_df)
-                info_list.append([depth, simple_max_prob])
-            except ValueError:
-                print(node_df)
-                raise
-                
-        return pd.DataFrame(info_list, columns=['depth', 'max_prob']).sort_values('depth')
+                sample_ratio = len(node_df)/len(df)
+                info_list.append([depth, simple_max_prob, sample_ratio])
+        return pd.DataFrame(info_list, \
+                columns=['depth', 'max_prob', 'sample_ratio']).sort_values('depth')
     
     else:
         max_simple_rules = [i for i in tree_rule if len(i[:-1]) <= cut_depth]
@@ -161,7 +160,8 @@ def get_usrt_info(df, tree_ins, tree_model, cut_depth, target_att= 'target'):
         N_simple_rule = len(max_simple_rules)
         simple_df = df.loc[simple_idx,:]
         simple_max_prob = np.mean(np.max(tree_ins.predict(simple_df, tree_model)[1],1))
-        
-        
         simple_ratio = len(simple_df)/len(df)
-        return simple_ratio, simple_max_prob, N_simple_rule
+        if tree_rule[0] == 'Root_node':
+            return 0,0,0
+        else:
+            return simple_ratio, simple_max_prob, N_simple_rule
