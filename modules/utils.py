@@ -146,7 +146,7 @@ def get_usrt_info(df, tree_ins, tree_model, cut_depth, target_att= 'target'):
                 #If there is no value that satisfies this rule, it is ignored.
                 simple_max_prob = max(Counter(node_df[target_att]).values())/len(node_df)
                 sample_ratio = len(node_df)/len(df)
-                info_list.append([depth, simple_max_prob, sample_ratio])
+                info_list.append([depth-1, simple_max_prob, sample_ratio])
         return pd.DataFrame(info_list, \
                 columns=['depth', 'max_prob', 'sample_ratio']).sort_values('depth')
     
