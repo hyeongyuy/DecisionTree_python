@@ -148,7 +148,3 @@ class baselineSplitCrit(splitCrit):
 
         else:
             return super(baselineSplitCrit, self).split_criteria(left, right, target_values)
-
-
-    def best_split(self, data, target_attribute_name):
-        return super(baselineSplitCrit, self).best_split(data, target_attribute_name)
